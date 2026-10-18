@@ -52,7 +52,7 @@ function render(){
   result=null;$('error').hidden=false;$('error').textContent=e.message;
   $('results').classList.add('invalid');
   for(const id of ['headline-value','complement-value','first-pension','total-pension','total-paid'])$(id).textContent='—';
-  $('coverage-note').textContent=r.plan.family==='mt8560'?'ก่อนรับบำนาญ: 100% ของทุนถึงอายุ 44 ปี อายุ 45–59 ปีเพิ่มปีละ 10% เป็น 110–250% ของทุน · หลังรับบำนาญ อายุ 60–72 ปี: มูลค่าปัจจุบันของบำนาญที่ยังไม่ได้รับตามตารางรับรอง 15 ปี × ทุนประกัน ÷ 1,000 · อายุ 73–85 ปี: -':'ก่อนรับบำนาญ ตารางแสดงความคุ้มครองขั้นต่ำ 105% ของเบี้ยสะสม หลังเริ่มรับบำนาญ แสดงเบี้ยสะสมหักเงินบำนาญที่ได้รับแล้ว';
+  $('coverage-note').textContent='กรอกข้อมูลให้ถูกต้องเพื่อดูความคุ้มครอง';
   $('rate-detail').textContent='';$('calculation-note').textContent='แก้ไขข้อมูลเพื่อดูผลคำนวณ';
   $('schedule-body').replaceChildren();$('row-count').textContent='กรอกข้อมูลให้ครบเพื่อคำนวณ';$('chart').replaceChildren();$('csv').disabled=true;$('pdf').disabled=true;$('print').disabled=true;
  }
@@ -80,7 +80,7 @@ async function downloadReport(format){
  const r=result,button=$(format==='pdf'?'pdf':'csv'),label=button.innerHTML;button.disabled=true;button.textContent='กำลังสร้างไฟล์…';
  try{
   const blob=await (format==='pdf'?createPDFReport(r,mode):createExcelReport(r,mode)),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download=`TYINSURE_Flexi_Retire_${r.plan.id}_age${r.age}.${format==='pdf'?'pdf':'xlsx'}`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  a.href=url;a.download=`TYINSURE_FreeRetire_${r.plan.id}_age${r.age}.${format==='pdf'?'pdf':'xlsx'}`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }catch(e){$('error').hidden=false;$('error').textContent=`ส่งออก ${format==='pdf'?'PDF':'Excel'} ไม่สำเร็จ กรุณาลองอีกครั้ง (${e.message})`;}
  finally{button.innerHTML=label;button.disabled=!result;}
 }
