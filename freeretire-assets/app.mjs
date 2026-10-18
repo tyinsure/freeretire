@@ -6,11 +6,10 @@ const $=id=>document.getElementById(id);
 const money=n=>Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const compact=n=>n>=1000000?`${n/1000000} ล้าน`:n>=1000?`${n/1000}k`:String(n);
 let plans=[],mode='sum',result=null,lastCalculatedInput='';
-const input=()=>({mode,gender:document.querySelector('input[name="gender"]:checked')?.value,age:$('age').value,planId:$('plan').value,amount:$('amount').value,frequency:plans.find(p=>p.id===$('plan').value)?.family==='mt8560'?$('frequency').value:'annual'});
+const input=()=>({mode,gender:document.querySelector('input[name="gender"]:checked')?.value,age:$('age').value,planId:$('plan').value,amount:$('amount').value,frequency:'annual'});
 function updateHints(){
  const p=plans.find(p=>p.id===$('plan').value);if(!p)return;
  $('age-hint').textContent=`มีอัตราเบี้ยสำหรับอายุ ${p.minAge}–${p.maxAge} ปี`;
- $('frequency-field').hidden=p.family!=='mt8560';if(p.family!=='mt8560')$('frequency').value='annual';
  $('age').max=p.maxAge;$('age').min=p.minAge;
  $('plan-hint').textContent=p.family==='mt8560'?'ชำระถึงก่อนอายุ 60 ปี · บำนาญ 12% ทุกปี อายุ 60–85 ปี':p.kind==='single_premium'?`ชำระเบี้ยครั้งเดียว · ปีแรกที่รับบำนาญ ${Math.round(p.firstPensionPct*100)}% · เริ่มอายุ ${p.pensionAge} ปี`:p.kind==='five_years'?`ชำระเบี้ย 5 ปี · เริ่มรับบำนาญอายุ ${p.pensionAge} ปี`:`ชำระถึงก่อนอายุ ${p.pensionAge} ปี · เริ่มรับบำนาญอายุ ${p.pensionAge} ปี`;
  $('amount-label').innerHTML=mode==='sum'?'ทุนประกัน <span>บาท</span>':(p.family==='mt8560'?'เบี้ยประกันต่องวด <span>บาท/งวด</span>':p.kind==='single_premium'?'เบี้ยประกันชำระครั้งเดียว <span>บาท</span>':'เบี้ยประกันรายปี <span>บาท/ปี</span>');
@@ -94,7 +93,6 @@ try{
  $('form').addEventListener('submit',e=>{e.preventDefault();render();});
  let timer;
  for(const el of [$('age'),$('amount')])el.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(render,250);});
- $('frequency').addEventListener('change',()=>{updateHints();render();});
  $('plan').addEventListener('change',()=>{updateHints();render();});
  document.querySelectorAll('input[name="gender"]').forEach(el=>el.addEventListener('change',()=>{render();}));
  $('csv').addEventListener('click',()=>downloadReport('xlsx'));$('pdf').addEventListener('click',()=>downloadReport('pdf'));$('print').addEventListener('click',()=>window.print());
