@@ -1,2 +1,0 @@
-# freeretire
-แจกจ้า
