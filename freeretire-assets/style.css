@@ -31,3 +31,21 @@
 .export-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.export-actions .outline-button{white-space:nowrap}@media(max-width:760px){.export-actions{gap:8px}}@media print{.export-actions{display:none!important}}
 
 .customer-summary{margin-top:24px;padding:28px}.customer-summary-heading{display:flex;justify-content:space-between;align-items:center;gap:16px}.customer-summary-help{color:var(--muted);font-size:12px;line-height:1.8;margin:14px 0}.summary-text-label{display:block;font-size:12px;color:#665669;margin-bottom:8px}.customer-summary textarea{display:block;width:100%;min-height:330px;resize:vertical;border:1px solid #e2d5dd;border-radius:12px;background:#fffcfd;padding:18px;font:13px/1.9 Sarabun,Arial,sans-serif;color:var(--ink);white-space:pre-wrap}.copy-summary-button{border:1px solid var(--pink);border-radius:10px;background:var(--pink);color:white;padding:11px 18px;white-space:nowrap;font-size:13px}.customer-summary-bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}.customer-summary-bottom p{font-size:12px;color:var(--green);margin:0;min-height:20px}.text-button{border:0;background:transparent;padding:5px 0;color:var(--pink);font-size:12px;cursor:pointer}@media(max-width:760px){.customer-summary{padding:20px;border-radius:17px}.customer-summary-heading{align-items:flex-start;flex-direction:column;gap:12px}.customer-summary h2{font-size:18px}.copy-summary-button{width:100%;padding:12px}.customer-summary textarea{font-size:13px;padding:14px}.customer-summary-bottom{align-items:flex-start;flex-direction:column;gap:8px}}@media print{.customer-summary{display:none!important}}
+
+/* Keep the browser print route on the same A4 portrait paper as PDF export. */
+@page{size:A4 portrait;margin:10mm}
+@media print{
+ html,body{width:auto!important;min-width:0!important;margin:0!important;padding:0!important}
+ main,footer,.topbar{width:100%!important;max-width:100%!important;margin:0!important;padding-left:0!important;padding-right:0!important}
+ .workspace{display:block!important;min-width:0!important}
+ .results,.chart-section,.schedule-section,.table-scroll{width:100%!important;min-width:0!important;max-width:100%!important}
+ .table-scroll{overflow:visible!important;max-height:none!important}
+ .schedule-section table{width:100%!important;min-width:0!important;table-layout:fixed;white-space:normal!important}
+ .schedule-section th,.schedule-section td{width:auto!important;min-width:0!important;max-width:none!important;padding:5px 3px!important;overflow-wrap:anywhere;font-size:8px!important;position:static!important}
+ .schedule-section th:first-child,.schedule-section td:first-child{width:13%!important}
+ .schedule-section thead{display:table-header-group}
+ .schedule-section tr{break-inside:avoid;page-break-inside:avoid}
+ .schedule-header{display:block!important}
+ .chart>svg{width:100%!important;height:auto!important;max-width:100%!important}
+ .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}

@@ -1,5 +1,7 @@
-const W=595.28,H=841.89,M=28,TABLE_BOTTOM=738,ROW=20;
-const widths=[34,99,61,110,112,123.28];
+import {REPORT_DISCLAIMER} from './report-disclaimer.mjs';
+const MM_TO_PT=72/25.4;
+export const A4_PAGE_SIZE=Object.freeze({width:210*MM_TO_PT,height:297*MM_TO_PT});
+const W=A4_PAGE_SIZE.width,H=A4_PAGE_SIZE.height,M=10*MM_TO_PT,TABLE_BOTTOM=738,ROW=20;
 const money=n=>Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 export function reportPageLayouts(r){
  const pages=[];let offset=0;
@@ -10,13 +12,19 @@ export function reportPageLayouts(r){
  return pages;
 }
 export function drawPDFPage(canvas,r,mode,layout,index,total,scale=3){
- const legacy=r.type==='legacy',withRider=legacy&&!!r.rider,widths=withRider?[30,39,90,86,97,100,97.28]:legacy?[34,48,112,112,112,121.28]:[34,99,61,110,112,123.28];
+ const legacy=r.type==='legacy',withRider=legacy&&!!r.rider,rawWidths=withRider?[30,39,90,86,97,100,97.28]:legacy?[34,48,112,112,112,121.28]:[34,99,61,110,112,123.28];
+ const columnScale=(W-2*M)/rawWidths.reduce((sum,width)=>sum+width,0),widths=rawWidths.map(width=>width*columnScale);
  canvas.width=Math.ceil(W*scale);canvas.height=Math.ceil(H*scale);
  const c=canvas.getContext('2d');c.scale(scale,scale);c.fillStyle='#FFFFFF';c.fillRect(0,0,W,H);
  function text(value,x,y,{size=10,color='#36283b',bold=false,align='left',maxWidth}={}){
-  c.font=`${bold?'bold ':''}${size}px Sarabun`;c.fillStyle=color;c.textAlign=align;c.textBaseline='middle';
-  // Keep unusually large amounts inside their own cells.
-  if(maxWidth&&c.measureText(String(value)).width>maxWidth)c.fillText(String(value),x,y,maxWidth);else c.fillText(String(value),x,y);
+  // Position glyphs explicitly: avoid WebKit differences in aligned/maxWidth fillText.
+  const content=String(value),setFont=()=>{c.font=`${bold?'700':'400'} ${size}px Sarabun`;};
+  c.save();setFont();c.fillStyle=color;c.textAlign='left';c.textBaseline='middle';c.direction='ltr';
+  let measured=c.measureText(content).width;
+  if(maxWidth&&measured>maxWidth){size*=maxWidth/measured;setFont();measured=c.measureText(content).width;}
+  const left=align==='right'?x-measured:align==='center'?x-measured/2:x;
+  c.fillText(content,left,y);
+  c.restore();
  }
  function line(x1,y1,x2,y2,color='#CBC3C8'){c.beginPath();c.strokeStyle=color;c.lineWidth=.5;c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
  text('TYINSURE',M,37,{size:18,bold:true,color:'#A13362'});
@@ -55,18 +63,26 @@ export function drawPDFPage(canvas,r,mode,layout,index,total,scale=3){
  text(r.plan.family==='mt8560'?'* ก่อนบำนาญ: 100% ของทุนถึงอายุ 44 ปี อายุ 45–59 ปีเพิ่มเป็น 110–250%':legacy?'* ความคุ้มครองขั้นต่ำ = ค่าสูงกว่าระหว่างทุนและเบี้ยสะสม ยังไม่รวมมูลค่าเวนคืน':'* ก่อนรับบำนาญ: ความคุ้มครองขั้นต่ำ 105% ของเบี้ยประกันที่ชำระสะสม',M,774,{size:8});
  text(r.plan.family==='mt8560'?'อายุ 60–73 ปี: มูลค่าปัจจุบันตามตาราง × ทุน ÷ 1,000 · อายุ 74–85 ปี: -':legacy?'อายุ ณ ต้นปี เบี้ยสะสมคิดหลังชำระครบทุกงวดของปีนั้น แถวสุดท้ายครบอายุ 99 ปี':'หลังเริ่มรับบำนาญ: เบี้ยสะสมหักเงินบำนาญสะสมที่ได้รับแล้ว (ไม่ต่ำกว่า 0 บาท)',M,788,{size:8});
  if(withRider)text('ตาราง PA รวมทุกงวดต่อปีตามอายุ กลุ่มอาชีพ 1 การต่ออายุขึ้นกับเงื่อนไข ไม่มีอัตราไม่ใช่เบี้ยฟรี',M,800,{size:7.5,maxWidth:W-2*M});
- text('ทัก LINE @TYINSURE   https://line.me/R/ti/p/@tyinsure',M,withRider?819:809,{size:8,color:'#338169'});
- text(`หน้า ${index+1} / ${total}`,W-M,withRider?819:809,{size:8,color:'#877b87',align:'right'});
+ text('ทัก LINE @TYINSURE   https://line.me/R/ti/p/@tyinsure',M,withRider?810:798,{size:8,color:'#338169'});
+ text(`หน้า ${index+1} / ${total}`,W-M,withRider?810:798,{size:8,color:'#877b87',align:'right'});
+ text(REPORT_DISCLAIMER,M,withRider?822:809,{size:7,color:'#766775',maxWidth:W-2*M});
  return canvas;
 }
-export async function createPDFReport(r,mode,{createCanvas=()=>document.createElement('canvas'),loadFont=()=>document.fonts.load('11px Sarabun','สรุปแผนบำนาญ')}={}){
- const [{PDFDocument}]=await Promise.all([import('./assets/pdf-lib.min.mjs'),loadFont()]);
+export async function loadPDFFonts(){
+ const sample='สรุปแผนบำนาญ ทุนประกัน 0123456789,. บาท';
+ await Promise.all([document.fonts.load('400 11px Sarabun',sample),document.fonts.load('700 11px Sarabun',sample)]);
+ await document.fonts.ready;
+}
+export async function createPDFReport(r,mode,{createCanvas=()=>document.createElement('canvas'),loadFont=loadPDFFonts}={}){
+ const [{PDFDocument,PrintScaling}]=await Promise.all([import('./assets/pdf-lib.min.mjs'),loadFont()]);
  const pdf=await PDFDocument.create();pdf.setTitle(`TYINSURE - ${r.plan.label}`);pdf.setAuthor('TYINSURE');pdf.setSubject('สรุปผลประโยชน์และความคุ้มครองรายปี');
+ const preferences=pdf.catalog.getOrCreateViewerPreferences();
+ preferences.setPrintScaling(PrintScaling.None);preferences.setPickTrayByPDFSize(true);
  const layouts=reportPageLayouts(r);
  for(let i=0;i<layouts.length;i++){
   const canvas=drawPDFPage(createCanvas(),r,mode,layouts[i],i,layouts.length);
   const png=await pdf.embedPng(canvas.toDataURL('image/png'));
-  const page=pdf.addPage([W,H]);page.drawImage(png,{x:0,y:0,width:W,height:H});
+  const page=pdf.addPage([W,H]);page.setCropBox(0,0,W,H);page.setTrimBox(0,0,W,H);page.drawImage(png,{x:0,y:0,width:W,height:H});
   canvas.width=0;canvas.height=0;
  }
  return new Blob([await pdf.save()],{type:'application/pdf'});

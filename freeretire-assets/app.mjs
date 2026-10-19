@@ -1,5 +1,5 @@
-import {createPDFReport} from './pdf-export.mjs';
-import {createExcelReport} from './excel-export.mjs';
+import {createPDFReport} from './pdf-export.mjs?v=20261019-footer1';
+import {createExcelReport} from './excel-export.mjs?v=20261019-footer1';
 import {enableChartInteraction} from './chart-interaction.mjs';
 import {calculate,planBands} from './calculator.mjs';
 const $=id=>document.getElementById(id);

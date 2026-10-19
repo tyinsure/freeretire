@@ -1,3 +1,4 @@
+import {REPORT_DISCLAIMER} from './report-disclaimer.mjs';
 // Layout and styles are authored with Artifact Tool in excel-template.json.
 const encoder=new TextEncoder();
 const xml=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
@@ -43,12 +44,13 @@ export function reportParts(template,r,mode){
   `PA Easy Plan ${r.rider.name} · กลุ่มอาชีพ ${r.rider.occupation}${r.rider.holiday?' · รวมเบี้ยเพิ่มวันหยุดนักขัตฤกษ์แล้ว':''}`,
   'ตาราง PA รวมเบี้ยทุกงวดต่อปีตามช่วงอายุ การต่ออายุขึ้นกับเงื่อนไขสัญญา ไม่มีอัตราไม่ใช่เบี้ยฟรี',
   'เบี้ยและวงเงิน PA แยกจากเบี้ยสะสมและความคุ้มครองของสัญญาหลัก');
+ notes.push(REPORT_DISCLAIMER);
  notes.forEach((text,i)=>{const row=end+2+i;rows.push(`<x:row r="${row}" ht="25" customHeight="1">${cell('A'+row,text,2)}</x:row>`);});
  sheet=sheet.replace(/<x:sheetData>[\s\S]*?<\/x:sheetData>/,`<x:sheetData>${rows.join('')}</x:sheetData>`);
  sheet=sheet.replace('</x:mergeCells>',notes.map((_,i)=>`<x:mergeCell ref="A${end+2+i}:${lastCol}${end+2+i}" />`).join('')+'</x:mergeCells>');
  if(withRider)sheet=sheet.replace('ref="A2:F2"','ref="A2:G2"').replace('ref="A3:F3"','ref="A3:G3"').replace('</x:mergeCells>','<x:mergeCell ref="A9:G9" /></x:mergeCells>').replace('</x:cols>','<x:col min="7" max="7" width="27" customWidth="1" /></x:cols>');
  sheet=sheet.replace('<x:sheetViews>','<x:sheetPr><x:pageSetUpPr fitToPage="1" /></x:sheetPr><x:sheetViews>');
- sheet=sheet.replace(/<x:pageMargins[^>]*\/>/,'<x:printOptions horizontalCentered="1" /><x:pageMargins left="0.25" right="0.25" top="0.4" bottom="0.4" header="0.2" footer="0.2" /><x:pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" /><x:headerFooter><x:oddFooter>&amp;LTYINSURE&amp;Rหน้า &amp;P / &amp;N</x:oddFooter></x:headerFooter>');
+ sheet=sheet.replace(/<x:pageMargins[^>]*\/>/,'<x:printOptions horizontalCentered="1" /><x:pageMargins left="0.25" right="0.25" top="0.4" bottom="0.4" header="0.2" footer="0.2" /><x:pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" /><x:headerFooter><x:oddFooter>&amp;LTYINSURE&amp;C&amp;8'+xml(REPORT_DISCLAIMER)+'&amp;Rหน้า &amp;P / &amp;N</x:oddFooter></x:headerFooter>');
  parts['xl/worksheets/sheet1.xml']=sheet;
  parts['xl/workbook.xml']=parts['xl/workbook.xml'].replace('</x:workbook>',`<x:definedNames><x:definedName name="_xlnm.Print_Area" localSheetId="0">'สรุปแผนบำนาญ'!$A$1:$${lastCol}$${end+notes.length+1}</x:definedName><x:definedName name="_xlnm.Print_Titles" localSheetId="0">'สรุปแผนบำนาญ'!$10:$10</x:definedName></x:definedNames></x:workbook>`);
  if(legacy){
